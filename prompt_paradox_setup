@@ -33,11 +33,17 @@ prompt_end() {
 }
 
 function build_prompt {
-  prompt_segment black default '%(1?;%{%F{red}%}✘ ;)%(!;%{%F{yellow}%}⚡ ;)%(1j;%{%F{cyan}%}%j⚙ ;)%{%F{blue}%}%n%{%F{red}%}@%{%F{green}%}%M'
+  #prompt_segment black default '%(1?;%{%F{red}%}✘ ;)%(!;%{%F{yellow}%}⚡ ;)%(1j;%{%F{cyan}%}%j⚙ ;)'
+  prompt_segment green black '%F{32}◉ ⮁' # ❡ ↹
+  #prompt_segment black default  '%{%F{blue}%}%n%}% %F{white}@ %{%F{green}%}%M'
   prompt_segment blue black '%2~'
-  if $git_status; then
-    prompt_segment green black '${(e)git_info[prompt]}${git_info[status]}'
+
+  if [ "${vcs_info_msg_0_}" != "" ]; then
+    prompt_segment green black '%F{black}⭠${vcs_info_msg_0_}'
   fi
+
+  prompt_segment black white '%F{red}♦ ${rbv:5}'
+
   prompt_end
 }
 
@@ -66,10 +72,14 @@ function prompt_paradox_precmd {
   setopt LOCAL_OPTIONS
   unsetopt XTRACE KSH_ARRAYS
 
-  # Get Git repository information.
-  if (( $+functions[git-info] )); then
-    git_status=git-info
+  vcs_info
+
+  if (( $+functions[ruby-info] )); then
+    ruby-info
   fi
+
+  rbv=`rvm-prompt`
+
   timer_result=$(($SECONDS-$start_time))
   if [[ $timer_result -gt 10 ]]; then
     calc_elapsed_time
@@ -84,31 +94,32 @@ function prompt_paradox_setup {
 
   # Load required functions.
   autoload -Uz add-zsh-hook
+  autoload -Uz vcs_info
 
   # Add hook for calling git-info before each command.
   add-zsh-hook preexec prompt_paradox_preexec
   add-zsh-hook precmd prompt_paradox_precmd
 
+  # Setup VCS_INFO  
+  zstyle ':vcs_info:*' enable git svn
+  zstyle ':vcs_info:*' stagedstr '%F{red}●'
+  zstyle ':vcs_info:*' unstagedstr '%F{green}●'
+  zstyle ':vcs_info:*' check-for-changes true
+  #zstyle ':vcs_info:*' get-revision true
+  #zstyle ':vcs_info:*' use-simple true
+
+  #zstyle ':vcs_info:*' formats ' %F{8}%b%f %F{white}%.7i%f%u'
+  zstyle ':vcs_info:*' formats '%c %b %u'
+  #zstyle ':vcs_info:*' actionformats ' %F{8}%b%f %F{white}%.7i%f +%a%u'
+  zstyle ':vcs_info:git*+set-message:*' hooks git-status
+
   zstyle ':prezto:module:editor:info:completing' format '%B%F{red}...%f%b'
   zstyle ':prezto:module:editor:info:keymap:primary' format '%B%F{blue}❯%f%b'
   zstyle ':prezto:module:editor:info:keymap:primary:overwrite' format '%F{red}♺%f'
   zstyle ':prezto:module:editor:info:keymap:alternate' format '%B%F{red}❮%f%b'
-  zstyle ':prezto:module:git:info:action' format '! %s'
-  zstyle ':prezto:module:git:info:added' format '✚'
-  zstyle ':prezto:module:git:info:ahead' format '⬆'
-  zstyle ':prezto:module:git:info:behind' format '⬇'
-  zstyle ':prezto:module:git:info:branch' format '⭠ %b'
-  zstyle ':prezto:module:git:info:commit' format '➦ %.7c'
-  zstyle ':prezto:module:git:info:deleted' format '✖'
-  zstyle ':prezto:module:git:info:modified' format '✱'
-  zstyle ':prezto:module:git:info:position' format '%p'
-  zstyle ':prezto:module:git:info:renamed' format '➙'
-  zstyle ':prezto:module:git:info:stashed' format 's'
-  zstyle ':prezto:module:git:info:unmerged' format '═'
-  zstyle ':prezto:module:git:info:untracked' format '?'
-  zstyle ':prezto:module:git:info:keys' format \
-    'prompt' '$(coalesce "%b" "%p" "%c")%s' \
-    'status' ' %A%B%S%a%d%m%r%U%u'
+
+  # Set ruby-info parameters.
+  zstyle ':prezto:module:ruby:info:version' format ' %F{white}%v%f'
 
   # Define prompts.
   PROMPT='
@@ -119,3 +130,4 @@ function prompt_paradox_setup {
 }
 
 prompt_paradox_setup "$@"
+
