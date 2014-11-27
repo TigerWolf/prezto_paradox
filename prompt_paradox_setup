@@ -36,7 +36,7 @@ function build_prompt {
   #prompt_segment black default '%(1?;%{%F{red}%}✘ ;)%(!;%{%F{yellow}%}⚡ ;)%(1j;%{%F{cyan}%}%j⚙ ;)'
   prompt_segment green black '%F{32}◉ ⮁' # ❡ ↹
   #prompt_segment black default  '%{%F{blue}%}%n%}% %F{white}@ %{%F{green}%}%M'
-  prompt_segment blue black '%2~'
+  prompt_segment blue black '%2/'
 
   if [ "${vcs_info_msg_0_}" != "" ]; then
     prompt_segment green black '%F{black}⭠${vcs_info_msg_0_}'
